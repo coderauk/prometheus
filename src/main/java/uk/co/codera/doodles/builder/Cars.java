@@ -2,34 +2,41 @@ package uk.co.codera.doodles.builder;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class Cars {
+public class Cars implements Iterable<Car> {
 
 	private final List<Car> cars;
 
 	/**
 	 * <p>
-	 * Constructor is private, can only create instances via the builder.
-	 * </p>
-	 * <p>
-	 * Constructor takes the builder rather than pass an ever growing list of
-	 * parameters.
+	 * Constructor is private, can only create instances via the builder or another Cars instance.
 	 * </p>
 	 */
 	private Cars(Builder builder) {
+		this(builder.cars);
+	}
+	
+	/**
+	 * <p>
+	 * Constructor is private, can only create instances via the builder or another Cars instance.
+	 * </p>
+	 */
+	private Cars(List<Car> cars) {
 		/*
 		 * Take defensive copy of list passed in and make it unmodifiable. don't
-		 * want clients of the builder to be able to modify the immutable
+		 * want clients to be able to modify the immutable
 		 * object.
 		 */
-		this.cars = Collections.unmodifiableList(new ArrayList<>(builder.cars));
+		this.cars = Collections.unmodifiableList(new ArrayList<>(cars));
 	}
 	
 	public static Cars.Builder someCars() {
 		return new Builder();
 	}
-	
+
 	public static Cars.Builder someCars(Car.Builder... carBuilders) {
 		Builder cars = someCars();
 		for (Car.Builder carBuilder : carBuilders) {
@@ -38,6 +45,16 @@ public class Cars {
 		return cars;
 	}
 	
+	
+	public Cars findByManufacturer(String manufacturer) {
+		return new Cars(this.cars.stream().filter(c -> c.getManufacturer().equals(manufacturer)).collect(Collectors.toList()));
+	}
+	
+	@Override
+	public Iterator<Car> iterator() {
+		return this.cars.iterator();
+	}
+
 	public int size() {
 		return this.cars.size();
 	}
@@ -66,7 +83,7 @@ public class Cars {
 			this.cars.add(car.build());
 			return this;
 		}
-		
+
 		public Cars build() {
 			return new Cars(this);
 		}
